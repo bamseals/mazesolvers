@@ -15,7 +15,7 @@ class World(object):
         self.world_spec = WorldSpec(world_file)
 
         # Parameters to configure the graphics.
-        self.Width = 800 // self.world_spec.x_width
+        self.Width = 700 // self.world_spec.x_width
 
         self.grid_cells = {} # Dictionary to hold references to cells in the grid.
 
