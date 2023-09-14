@@ -1,0 +1,20 @@
+x_width:15
+y_width:15
+x_player_start:0
+y_player_start:0
+walls
+1, 0
+1, 1
+1, 2
+2, 1
+2, 2
+2, 3
+2, 4
+2, 5
+4, 5
+5, 5
+6, 5
+7, 5
+8, 5
+specials
+4, 0, green, 1, False
