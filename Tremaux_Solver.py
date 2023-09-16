@@ -15,7 +15,6 @@ class MazeSolver(object):
     def __init__(self, world):
         self.world = world
         self.discovered = {}
-        self.path = []
         self.currentcell = Cell((-1,-1))
 
     def tremaux_search(self):
@@ -25,14 +24,14 @@ class MazeSolver(object):
         self.discovered[start.value] = start
 
         while self.currentcell != 0:
-            time.sleep(0.05)
+            time.sleep(0.01)
             if self.world.check_finish_node(self.currentcell.value):
+                self.currentcell.marks
+                self.discovered[self.currentcell.value] = self.currentcell
                 return self.currentcell
             
             x = self.currentcell.value[0]
             y = self.currentcell.value[1]
-
-            print(self.currentcell.value)
 
             self.currentcell.marks += 1
             if not self.currentcell.isJunction:
@@ -53,7 +52,10 @@ class MazeSolver(object):
             if len(neighbors) < 1:
                 self.currentcell = 0
             else:
-                if len(neighbors) > 2:
+                if (len(neighbors) == 1): #dead end
+                    self.currentcell.marks += 1
+                    self.world.set_cell_visited(self.currentcell.value)
+                elif len(neighbors) > 2:
                     self.currentcell.isJunction = True
                     self.world.set_cell_junction(self.currentcell.value)
 
@@ -62,30 +64,38 @@ class MazeSolver(object):
                 self.currentcell = next
     
     def follow_path(self):
-        for key in self.discovered:
-            print(key)
-            print(self.discovered[key].value)
-            print(self.discovered[key].marks)
+        path = []
         start = Cell((self.world.player[0], self.world.player[1]))
-        self.path.append(start.value)
+        path.append(start.value)
         self.currentcell = start
+        loop = True
 
-        x = self.currentcell.value[0]
-        y = self.currentcell.value[1]
-
-        while self.currentcell != 0:
+        while loop == True:
+            # if self.currentcell == 0:
+            #     loop = False
             if self.world.check_finish_node(self.currentcell.value):
-                self.path.append(self.currentcell.value)
-                return self.path
+                path.append(self.currentcell.value)
+                loop = False
+            else:
+                x = self.currentcell.value[0]
+                y = self.currentcell.value[1]
 
-            next = 0
-            for n in [(x+1, y), (x, y+1), (x-1, y), (x, y-1)]:
-                if n in self.discovered and self.discovered[n].marks == 1:
-                    next = self.discovered[n]
-                    self.path.append(n)
-            self.currentcell = next
-
-        return self.path.reverse()
+                next = 0
+                neighbors = []
+                for n in [(x+1, y), (x, y+1), (x-1, y), (x, y-1)]:
+                    if n in self.discovered and not n in path:
+                        neighbors.append(self.discovered[n])
+                        if self.discovered[n].marks == 1 or self.world.check_finish_node(n):
+                            next = self.discovered[n]
+                            path.append(n)
+                if next == 0 and len(neighbors) > 0:
+                    for n in neighbors:
+                        if n.isJunction:
+                            next = n
+                            path.append(n.value)
+                self.currentcell = next
+        path
+        return path
 
     def do_action(self,action):
         s = self.world.player
@@ -112,15 +122,15 @@ class MazeSolver(object):
 
         # Print out the path to the console.
         # Comment out if you don't need it.
-        print("Path is: ", end="")
+        # print("Path is: ", end="")
         print(path)
+        print(len(path))
 
         # Execute the BFS path repeatedly.
         while True:
             for i in range(len(path)-1):
                 # Find which direction the player should move.
                 direction = [path[i+1][0] - path[i][0], path[i+1][1] - path[i][1]]
-
                 action = 0
                 if direction[0] == 0:
                     if direction[1] == -1:
