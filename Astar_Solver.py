@@ -76,10 +76,6 @@ class MazeSolver(object):
 
         path.reverse()
         return path
-    
-    # def findClosest(list):
-    #     closest = Cell((-1,-1),0,0,0)
-    #     for cell in list:
 
     def do_action(self,action):
         s = self.world.player

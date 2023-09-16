@@ -5,23 +5,18 @@ import random
 import threading
 import time
 
-class Cell():
-  def __init__(self, value, x, y, dfs, dfe, prev ):
-    self.value: tuple = value # tuple
-    self.x:int = x
-    self.y:int = y
-    self.dfs:int = dfs # distance from start
-    self.dfe:int = dfe
-    self.prev:Cell = prev # cell that this cell was discovered from
-
 class MazeSolver(object): 
     def __init__(self, world):
         self.world = world
 
-        self.bfs_discovered = {} # closed queue
-        self.bfs_queue = [] # open queue
+        self.bfs_discovered = {}
+        self.bfs_queue = []
 
     def bfs_search(self):
+        # create nodes at cells where there is more than one direction you could go
+        # track path from node to previous node
+        # if you run out of options it's a dead end, return to previous node and take another direction
+        # set_cell_traversed = mark node location
         """ Conduct a BFS of the maze. """
         # Initialize the BFS
         self.bfs_discovered[self.world.player] = 'root'
@@ -33,7 +28,6 @@ class MazeSolver(object):
         while len(self.bfs_queue) > 0:
             node = self.bfs_queue.pop(0)
             if self.world.check_finish_node(node):
-                #end node has been found
                 return node
 
             # If not the goal, process the cell and adjacent valid move to cells.
@@ -49,11 +43,6 @@ class MazeSolver(object):
                     # Comment line out if you want it to just go.
                     # Adjust float value lower if you want it to go faster.
                     time.sleep(0.05)
-
-        def tremaux_search(self):
-            root = Cell((self.world.player[0], self.world.player[1]))
-            self.bfs_discovered[self.world.player] = 'root'
-            self.bfs_queue.append(self.world.player)
 
     def bfs_path(self, end):
         """ Construct the path to traverse the maze. 
