@@ -5,58 +5,87 @@ import random
 import threading
 import time
 
+class Cell():
+  def __init__(self, value):
+    self.value: tuple = value # tuple
+    self.marks: int = 0
+    self.isJunction: bool = False
+
 class MazeSolver(object): 
     def __init__(self, world):
         self.world = world
+        self.discovered = {}
+        self.path = []
+        self.currentcell = Cell((-1,-1))
 
-        self.bfs_discovered = {}
-        self.bfs_queue = []
-
-    def bfs_search(self):
-        # create nodes at cells where there is more than one direction you could go
-        # track path from node to previous node
-        # if you run out of options it's a dead end, return to previous node and take another direction
-        # set_cell_traversed = mark node location
-        """ Conduct a BFS of the maze. """
-        # Initialize the BFS
-        self.bfs_discovered[self.world.player] = 'root'
-        self.bfs_queue.append(self.world.player)
-
-        # Set the color of the cell since it has been discovered
+    def tremaux_search(self):
+        start = Cell((self.world.player[0], self.world.player[1]))
         self.world.set_cell_discovered(self.world.player)
- 
-        while len(self.bfs_queue) > 0:
-            node = self.bfs_queue.pop(0)
-            if self.world.check_finish_node(node):
-                return node
+        self.currentcell = start
+        self.discovered[start.value] = start
 
-            # If not the goal, process the cell and adjacent valid move to cells.
-            self.world.set_cell_visited(node)
-            for n in [(node[0]-1, node[1]), (node[0]+1, node[1]), (node[0], node[1]-1), (node[0], node[1]+1)]:
-                if self.world.check_valid_move_cell(n) and n not in self.bfs_discovered:
-                    self.bfs_discovered[n] = node
-                    self.bfs_queue.append(n)
+        while self.currentcell != 0:
+            time.sleep(0.05)
+            if self.world.check_finish_node(self.currentcell.value):
+                return self.currentcell
+            
+            x = self.currentcell.value[0]
+            y = self.currentcell.value[1]
 
-                    # Set the color of the cell since it has been discovered.
-                    self.world.set_cell_discovered(n)
-                    # Sleep in order to show the exploration.
-                    # Comment line out if you want it to just go.
-                    # Adjust float value lower if you want it to go faster.
-                    time.sleep(0.05)
+            print(self.currentcell.value)
 
-    def bfs_path(self, end):
-        """ Construct the path to traverse the maze. 
+            self.currentcell.marks += 1
+            if not self.currentcell.isJunction:
+                if (self.currentcell.marks < 2):
+                    self.world.set_cell_discovered(self.currentcell.value)
+                else:
+                    self.world.set_cell_visited(self.currentcell.value)
 
-        Args:
-            end: the ending cell to start the backwards path through.
-        """
-        path = [end]
+            neighbors = []
+            for n in [(x+1, y), (x, y+1), (x-1, y), (x, y-1)]:
+                if self.world.check_valid_move_cell(n):
+                    if n in self.discovered:
+                        neighbors.append(self.discovered[n])
+                    else:
+                        neighbors.append(Cell(n))
+            
+            # if somehow you are trapped in a cell with nowhere to go, end the program
+            if len(neighbors) < 1:
+                self.currentcell = 0
+            else:
+                if len(neighbors) > 2:
+                    self.currentcell.isJunction = True
+                    self.world.set_cell_junction(self.currentcell.value)
 
-        while self.bfs_discovered[path[-1]] != 'root':
-            path.append(self.bfs_discovered[path[-1]])
+                next = min(neighbors, key=lambda x: x.marks)
+                self.discovered[next.value] = next
+                self.currentcell = next
+    
+    def follow_path(self):
+        for key in self.discovered:
+            print(key)
+            print(self.discovered[key].value)
+            print(self.discovered[key].marks)
+        start = Cell((self.world.player[0], self.world.player[1]))
+        self.path.append(start.value)
+        self.currentcell = start
 
-        path.reverse()
-        return path
+        x = self.currentcell.value[0]
+        y = self.currentcell.value[1]
+
+        while self.currentcell != 0:
+            if self.world.check_finish_node(self.currentcell.value):
+                self.path.append(self.currentcell.value)
+                return self.path
+
+            next = 0
+            for n in [(x+1, y), (x, y+1), (x-1, y), (x, y-1)]:
+                if n in self.discovered and self.discovered[n].marks == 1:
+                    next = self.discovered[n]
+                    self.path.append(n)
+            self.currentcell = next
+
+        return self.path.reverse()
 
     def do_action(self,action):
         s = self.world.player
@@ -78,8 +107,8 @@ class MazeSolver(object):
         time.sleep(1)
         t = 1
 
-        goal = self.bfs_search()
-        path = self.bfs_path(goal)
+        self.tremaux_search()
+        path = self.follow_path()
 
         # Print out the path to the console.
         # Comment out if you don't need it.
