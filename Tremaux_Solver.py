@@ -39,9 +39,12 @@ class MazeSolver(object):
                     self.world.set_cell_discovered(self.currentcell.value)
                 else:
                     self.world.set_cell_visited(self.currentcell.value)
+                    
+            directions = [(x-1, y), (x, y-1), (x+1, y), (x, y+1)]
+            random.shuffle(directions)
 
             neighbors = []
-            for n in [(x+1, y), (x, y+1), (x-1, y), (x, y-1)]:
+            for n in directions:
                 if self.world.check_valid_move_cell(n):
                     if n in self.discovered:
                         neighbors.append(self.discovered[n])

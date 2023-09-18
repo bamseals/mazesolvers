@@ -42,9 +42,12 @@ class MazeSolver(object):
 
             x = self.currentcell.value[0]
             y = self.currentcell.value[1]
+            
+            directions = [(x-1, y), (x, y-1), (x+1, y), (x, y+1)]
+            random.shuffle(directions)
 
             newneighbors = []
-            for n in [(x-1, y), (x, y-1), (x+1, y), (x, y+1)]:
+            for n in directions:
                 if self.world.check_valid_move_cell(n) and not any(x.value == n for x in self.closed_queue):
                     newcell = Cell(n,self.currentcell.dfs+1,self.currentcell)
                     newneighbors.append(newcell)
