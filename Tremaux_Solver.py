@@ -24,7 +24,7 @@ class MazeSolver(object):
         self.discovered[start.value] = start
 
         while self.currentcell != 0:
-            time.sleep(0.01)
+            time.sleep(0.4)
             if self.world.check_finish_node(self.currentcell.value):
                 self.currentcell.marks
                 self.discovered[self.currentcell.value] = self.currentcell

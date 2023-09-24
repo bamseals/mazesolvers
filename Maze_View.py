@@ -5,80 +5,12 @@ import random
 import threading
 import time
 
-finish_coords = (-1,-1)
-
-class Cell():
-  def __init__(self, value, dfs, prev):
-    global finish_coords
-    self.value: tuple = value # tuple
-    self.dfs:int = dfs # distance from start
-    self.dfe:int = abs(value[0]-finish_coords[0]) + abs(value[1]-finish_coords[1]) # distance from end
-    self.td:int = self.dfs + self.dfe # total predicted distance weight
-    self.prev:Cell or int = prev # cell that this cell was discovered from
-
 class MazeSolver(object): 
     def __init__(self, world):
         self.world = world
 
-        self.closed_queue = [] # closed queue
-        self.open_queue = [] # open queue
-
-        self.currentcell = Cell((-1,-1),0,0)
-
-    def astar_search(self):
-        global finish_coords
-        finish_coords = self.world.find_finish_node()
-        start = Cell((self.world.player[0], self.world.player[1]), 0, 0)
-
-        self.open_queue.append(start)
-
-        self.world.set_cell_discovered(self.world.player)
-        self.currentcell = start
-
-        while len(self.open_queue) > 0:
-            if self.world.check_finish_node(self.currentcell.value):
-                #end node has been found
-                return self.currentcell
-
-            x = self.currentcell.value[0]
-            y = self.currentcell.value[1]
-            
-            directions = [(x-1, y), (x, y-1), (x+1, y), (x, y+1)]
-            random.shuffle(directions)
-
-            newneighbors = []
-            for n in directions:
-                if self.world.check_valid_move_cell(n) and not any(x.value == n for x in self.closed_queue):
-                    newcell = Cell(n,self.currentcell.dfs+1,self.currentcell)
-                    newneighbors.append(newcell)
-                    self.open_queue.append(newcell)
-                    self.world.set_cell_discovered(n)
-                    time.sleep(1)
-
-            self.closed_queue.append(self.currentcell)
-            self.world.set_cell_visited(self.currentcell.value)
-            self.open_queue.remove(self.currentcell)
-
-            if len(newneighbors) < 1:
-                closest = min(self.open_queue, key=lambda x: x.td)
-                self.currentcell = closest
-            else:
-                closest = min(newneighbors, key=lambda x: x.td)
-                self.currentcell = closest
-
-    def astar_path(self, end):
-        loop = True
-        node = end
-        path = []
-        while loop == True:
-            path.append(node.value)
-            if node.prev == 0:
-                loop = False
-            else:
-                node=node.prev
-
-        path.reverse()
-        return path
+        self.bfs_discovered = {}
+        self.bfs_queue = []
 
     def do_action(self,action):
         s = self.world.player
@@ -99,9 +31,8 @@ class MazeSolver(object):
 
         time.sleep(1)
         t = 1
-
-        goal = self.astar_search()
-        path = self.astar_path(goal)
+       
+        path = []
 
         # Print out the path to the console.
         # Comment out if you don't need it.
@@ -109,7 +40,7 @@ class MazeSolver(object):
         print(path)
 
         # Execute the BFS path repeatedly.
-        while True:
+        while False:
             for i in range(len(path)-1):
                 # Find which direction the player should move.
                 direction = [path[i+1][0] - path[i][0], path[i+1][1] - path[i][1]]
